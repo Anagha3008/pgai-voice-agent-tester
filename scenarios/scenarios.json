@@ -1,0 +1,23 @@
+[
+  {
+    "id": "call-01",
+    "category": "appointment_scheduling",
+    "patient": {
+      "name": "Maya Thompson",
+      "date_of_birth": "1992-04-18"
+    },
+    "objective": "Schedule an annual physical next Tuesday after 2 PM",
+    "facts": {
+      "reason": "Annual physical",
+      "preferred_time": "After 2 PM"
+    },
+    "instructions": [
+      "Speak naturally using short sentences",
+      "Answer only what the practice agent asks",
+      "Ask for another option if no afternoon appointment is available",
+      "Confirm the final appointment date and time before ending",
+      "Do not invent information that is not provided"
+    ],
+    "success_condition": "An appointment is scheduled or a clear alternative is offered"
+  }
+]
