@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, Request, WebSocket
 from fastapi.responses import Response
 from twilio.twiml.voice_response import Connect, VoiceResponse
 
+from app.media_bridge import handle_media_stream
 from app.scenario_loader import get_scenario
 
 
@@ -30,14 +31,18 @@ async def outbound_call(
     request: Request,
     scenario_id: str = "call-01",
 ) -> Response:
-    """Return TwiML that connects a call to our audio WebSocket."""
+    """Return TwiML that connects a call to the audio WebSocket."""
     try:
         get_scenario(scenario_id)
     except ValueError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
-    websocket_url = str(request.base_url).replace("http://", "ws://").replace(
-        "https://", "wss://"
+    websocket_url = str(request.base_url).replace(
+        "http://",
+        "ws://",
+    ).replace(
+        "https://",
+        "wss://",
     )
     websocket_url = f"{websocket_url}media-stream"
 
@@ -47,44 +52,13 @@ async def outbound_call(
     stream.parameter(name="scenario_id", value=scenario_id)
     response.append(connect)
 
-    return Response(content=str(response), media_type="application/xml")
+    return Response(
+        content=str(response),
+        media_type="application/xml",
+    )
 
 
 @app.websocket("/media-stream")
 async def media_stream(websocket: WebSocket) -> None:
-    """Receive live Twilio Media Stream events."""
-    await websocket.accept()
-
-    stream_sid: str | None = None
-    scenario_id: str | None = None
-
-    try:
-        while True:
-            message = await websocket.receive_json()
-            event = message.get("event")
-
-            if event == "connected":
-                print("Twilio media connection established")
-
-            elif event == "start":
-                start_data = message.get("start", {})
-                stream_sid = start_data.get("streamSid")
-
-                custom_parameters = start_data.get("customParameters", {})
-                scenario_id = custom_parameters.get("scenario_id", "call-01")
-
-                get_scenario(scenario_id)
-
-                print(f"Media stream started: {stream_sid}")
-                print(f"Scenario selected: {scenario_id}")
-
-            elif event == "media":
-                # Audio forwarding to OpenAI will be added next.
-                continue
-
-            elif event == "stop":
-                print(f"Media stream stopped: {stream_sid}")
-                break
-
-    except WebSocketDisconnect:
-        print(f"Media stream disconnected: {stream_sid}")
+    """Connect Twilio's audio stream to OpenAI Realtime."""
+    await handle_media_stream(websocket)
