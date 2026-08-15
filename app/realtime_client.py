@@ -25,10 +25,8 @@ def build_session_update(prompt: str) -> dict[str, Any]:
                         "model": "gpt-live-transcribe",
                     },
                     "turn_detection": {
-                        "type": "server_vad",
-                        "threshold": 0.5,
-                        "prefix_padding_ms": 300,
-                        "silence_duration_ms": 600,
+                        "type": "semantic_vad",
+                        "eagerness": "medium",
                         "create_response": True,
                         "interrupt_response": True,
                     },

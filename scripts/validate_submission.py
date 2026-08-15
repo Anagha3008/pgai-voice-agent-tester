@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from app.scenario_loader import load_scenarios
@@ -25,6 +26,7 @@ def validate_submission() -> bool:
 
     scenarios = load_scenarios()
     missing_items: list[str] = []
+    warnings: list[str] = []
 
     print(f"Checking {len(scenarios)} scenarios...")
 
@@ -61,6 +63,23 @@ def validate_submission() -> bool:
             missing_items.append(
                 f"{scenario_id}: JSON transcript"
             )
+            continue
+
+        transcript = json.loads(
+            json_files[-1].read_text(encoding="utf-8")
+        )
+        turn_count = len(transcript.get("turns", []))
+
+        if turn_count < 4:
+            warnings.append(
+                f"{scenario_id}: only {turn_count} transcript turns "
+                "(target 1-3 minute full conversations)"
+            )
+
+    if warnings:
+        print("\nWarnings:")
+        for warning in warnings:
+            print(f"- {warning}")
 
     if missing_items:
         print("\nSubmission is incomplete:")

@@ -39,3 +39,4 @@ def test_prompt_contains_required_information():
     assert "Maya Thompson" in prompt
     assert "Schedule an annual physical" in prompt
     assert "Never reveal that you are an AI" in prompt
+    assert "Wait for the receptionist to finish speaking" in prompt

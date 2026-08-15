@@ -50,3 +50,35 @@ def test_create_outbound_call_requires_twilio_credentials(
         match="TWILIO_ACCOUNT_SID is missing",
     ):
         call_service.create_outbound_call("call-01")
+
+
+def test_wait_for_call_completion_returns_terminal_status(
+    monkeypatch,
+) -> None:
+    statuses = iter(["in-progress", "completed"])
+
+    class FakeCall:
+        def __init__(self, status: str) -> None:
+            self.status = status
+
+    class FakeCalls:
+        def __call__(self, call_sid: str) -> "FakeCalls":
+            assert call_sid == "CA123"
+            return self
+
+        def fetch(self) -> FakeCall:
+            return FakeCall(next(statuses))
+
+    class FakeClient:
+        calls = FakeCalls()
+
+    monkeypatch.setattr(
+        call_service,
+        "get_twilio_client",
+        lambda: FakeClient(),
+    )
+    monkeypatch.setattr(call_service.time, "sleep", lambda _: None)
+
+    status = call_service.wait_for_call_completion("CA123")
+
+    assert status == "completed"
