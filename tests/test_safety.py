@@ -17,7 +17,7 @@ def test_unapproved_destination_is_blocked():
 def test_scenarios_load_successfully():
     scenarios = load_scenarios()
 
-    assert len(scenarios) >= 1
+    assert len(scenarios) == 10
     assert scenarios[0]["id"] == "call-01"
 
 
