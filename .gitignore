@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Call artifacts (generated during live testing)
+recordings/*.mp3
+transcripts/*.json
+transcripts/*.txt
